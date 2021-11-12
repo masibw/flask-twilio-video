@@ -15,6 +15,7 @@ let chat;
 let conv;
 let screenTrack;
 let dataTrack;
+let wannaFinishCount = 1;
 
 function addLocalVideo() {
     Twilio.Video.createLocalVideoTrack().then(track => {
@@ -126,6 +127,7 @@ function trackSubscribed(div, track) {
 	if (track.kind === 'data') {
 		track.on("message", (data) => {
 			addToWannaFinishPresenter(JSON.parse(data).message);
+			wannaFinishCount++;
     	});
 	}
     let trackElement = track.attach();
@@ -270,9 +272,8 @@ function onChatInputKey(ev) {
 
 function wannaFinishHandler() {
 	event.preventDefault();
-	console.log("wanna finish")
-	addToWannaFinishPresenter("wannaFInish")
-	sendDataToRoom("wannaFinish")
+	addToWannaFinishPresenter(`そろそろ終わりたいなぁと${wannaFinishCount}人が思っています`)
+	sendDataToRoom(`そろそろ終わりたいなぁと${wannaFinishCount}人が思っています`);
 	wannaFinishButton.disabled = true;
 }
 
