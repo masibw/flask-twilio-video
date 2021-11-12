@@ -8,11 +8,13 @@ const count = document.getElementById('count');
 const chatScroll = document.getElementById('chat-scroll');
 const chatContent = document.getElementById('chat-content');
 const chatInput = document.getElementById('chat-input');
+const wannaFinishButton = document.getElementById("wanna_finish_button");
 let connected = false;
 let room;
 let chat;
 let conv;
 let screenTrack;
+let dataTrack;
 
 function addLocalVideo() {
     Twilio.Video.createLocalVideoTrack().then(track => {
@@ -36,7 +38,8 @@ function connectButtonHandler(event) {
         connect(username).then(() => {
             button.innerHTML = 'Leave call';
             button.disabled = false;
-            shareScreen.disabled = false;
+			shareScreen.disabled = false;
+			wannaFinishButton.disabled = false;
         }).catch(() => {
             alert('Connection failed. Is the backend running?');
             button.innerHTML = 'Join call';
@@ -64,7 +67,9 @@ function connect(username) {
             data = _data;
             return Twilio.Video.connect(data.token);
         }).then(_room => {
-            room = _room;
+			room = _room;
+
+			room.localParticipant.publishTrack(dataTrack);
             room.participants.forEach(participantConnected);
             room.on('participantConnected', participantConnected);
             room.on('participantDisconnected', participantDisconnected);
@@ -118,18 +123,27 @@ function participantDisconnected(participant) {
 };
 
 function trackSubscribed(div, track) {
+	if (track.kind === 'data') {
+		track.on("message", (data) => {
+			addToWannaFinishPresenter(JSON.parse(data).message);
+    	});
+	}
     let trackElement = track.attach();
     trackElement.addEventListener('click', () => { zoomTrack(trackElement); });
     div.appendChild(trackElement);
 };
 
 function trackUnsubscribed(track) {
-    track.detach().forEach(element => {
-        if (element.classList.contains('participantZoomed')) {
-            zoomTrack(element);
-        }
-        element.remove()
-    });
+	if (track.kind === 'data') {
+		document.getElementById("wanna_finish_presenter").innerHTML = "";
+	} else {
+		track.detach().forEach((element) => {
+			if (element.classList.contains("participantZoomed")) {
+			zoomTrack(element);
+			}
+			element.remove();
+		});
+	}
 };
 
 function disconnect() {
@@ -146,7 +160,8 @@ function disconnect() {
     if (root.classList.contains('withChat')) {
         root.classList.remove('withChat');
     }
-    toggleChat.disabled = true;
+	toggleChat.disabled = true;
+	wannaFinishButton.disabled = true;
     connected = false;
     updateParticipantCount();
 };
@@ -253,8 +268,34 @@ function onChatInputKey(ev) {
     }
 };
 
+function wannaFinishHandler() {
+	event.preventDefault();
+	console.log("wanna finish")
+	addToWannaFinishPresenter("wannaFInish")
+	sendDataToRoom("wannaFinish")
+	wannaFinishButton.disabled = true;
+}
+
+
+function addToWannaFinishPresenter(newText) {
+	let presenter = document.getElementById("wanna_finish_presenter");
+	presenter.innerHTML = newText;
+}
+function addLocalData() {
+	var localDataTrack = new Twilio.Video.LocalDataTrack();
+	dataTrack = localDataTrack;
+}
+
+function sendDataToRoom(data) {
+	dataTrack.send(JSON.stringify({
+		message: data
+	}))
+}
+
 addLocalVideo();
+addLocalData();
 button.addEventListener('click', connectButtonHandler);
 shareScreen.addEventListener('click', shareScreenHandler);
 toggleChat.addEventListener('click', toggleChatHandler);
 chatInput.addEventListener('keyup', onChatInputKey);
+wannaFinishButton.addEventListener('click', wannaFinishHandler);
