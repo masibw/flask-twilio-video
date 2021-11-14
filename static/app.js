@@ -129,10 +129,13 @@ function trackSubscribed(div, track) {
 			addToWannaFinishPresenter(JSON.parse(data).message);
 			wannaFinishCount++;
     	});
-	}
+	} else {
     let trackElement = track.attach();
-    trackElement.addEventListener('click', () => { zoomTrack(trackElement); });
+    trackElement.addEventListener("click", () => {
+      zoomTrack(trackElement);
+    });
     div.appendChild(trackElement);
+  }
 };
 
 function trackUnsubscribed(track) {
