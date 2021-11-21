@@ -4,15 +4,17 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
     </head>
     <body>
-        <h1>Flask & Twilio Video Conference</h1>
+        <h1>Flask & Twilio Video Conference with finish button</h1>
         <form>
             <label for="username">Name: </label>
             <input type="text" name=”username” id="username">
             <button id="join_leave">Join call</button>
             <button id="share_screen" disabled>Share screen</button>
             <button id="toggle_chat" disabled>Toggle chat</button>
+            <button id="wanna_finish_button" disabled>Wanna finish this call</button>
         </form>
         <p id="count">Disconnected.</p>
+        <h2 id="wanna_finish_presenter" class="wanna_finish"></h2>
         <div id="root">
             <div id="container" class="container">
                 <div id="local" class="participant"><div></div><div class="label">Me</div></div>
